@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+    body { font-family: sans-serif }
+    .game_container {
+        display: inline-block;
+        position: relative;
+        width: 300px;
+        height: 300px;
+    }
+    #game { 
+        display: table;
+        position: absolute;
+        top: 50px;
+        left: 50px;
+    }
+    .row_container { display: table-row }
+    .game_container button {
+        position: absolute;
+    }
+    .game_container .Left {
+        top: 50px;
+        left: 0;
+        height: 200px;
+        width: 50px;
+    }
+    .game_container .Right {
+        top: 50px;
+        right: 0;
+        height: 200px;
+        width: 50px;
+    }
+    .game_container .Up {
+        top: 0;
+        left: 50px;
+        height: 50px;
+        width: 200px;
+    }
+    .game_container .Down {
+        bottom: 0;
+        left: 50px;
+        height: 50px;
+        width: 200px;
+    }
+    .cell { 
+        display: table-cell;
+        height: 50px;
+        width: 50px;
+        vertical-align: middle;
+        text-align: center;
+        background: #ccc;
+        font-weight: bold;
+    }
+    .val-2 {
+        background: #eee4da;
+    }
+    .val-4 {
+        background: #ede0c8;
+    }
+    .val-8 {
+        color: #fff;
+        background: #f2b179;
+    }
+    .val-16 {
+        color: #fff;
+        background: #f59563;
+    }
+    .val-32 {
+        color: #fff;
+        background: #f67c5f;
+    }
+    .val-64 {
+        color: #fff;
+        background: #f65e3b;
+    }
+    .val-128 {
+        color: #fff;
+        background: #edcf72;
+    }
+    .val-256 {
+        color: #fff;
+        background: #edcc61;
+    }
+    .val-512 {
+        color: #fff;
+        background: #edc850;
+    }
+    .val-1024 {
+        color: #fff;
+        background: #edc43f;
+    }
+    .val-2048 {
+        color: #fff;
+        background: #edc22e;
+    }
+    </style>
+</head>
+<body>
+<header>
+    <h1>2048</h1>
+    <h2>This is <i>precisely</i> what I should not be doing when I'm supposed to be studying...</h2>
+    <p><i>Click on buttons, or use keyboard arrow keys to play.</i></p>
+</header>
+<section class="game_container">
+    <button class="Up">&#8593;</button>
+    <button class="Left">&#8592;</button>
+    <button class="Right">&#8594;</button>
+    <button class="Down">&#8595;</button>
+    <div id="game"> </div>
+</section>
+<script type="text/javascript">
+    "use strict";
+    (function() {
+    var ROWS = 4,
+        COLS = ROWS,
+        GAME = "game",
+        VALS = {
+            0.0: 2,
+            0.1: 2,
+            0.2: 2,
+            0.3: 2,
+            0.4: 2,
+            0.5: 2,
+            0.6: 2,
+            0.7: 2,
+            0.8: 2,
+            0.9: 4,
+            1.0: 4
+        };
+    var cells = {
+        cells: [],
+        random_value: function random_value() {
+            return VALS[Math.round(Math.random() * 10) / 10];
+        },
+        random_cell: function random_cell() {
+            return this.cells[Math.round(Math.random() * (ROWS * COLS - 1))];
+        },
+        find_cell: function find_cell(row, col) {
+            var return_cell = "";
+            this.cells.forEach(function(cell) { 
+                if ((cell.row == row) && (cell.col == col)) {
+                    return_cell = cell;
+                };
+            });
+            return return_cell;
+        },
+        get_rows: function get_rows(ltr) {
+            var rows_container = [];
+            for (let row = 1; row <= ROWS; row += 1) {
+                var row_container = [];
+                for (let col = 1; col <= COLS; col += 1) {
+                    row_container.push(this.find_cell(row, col));
+                };
+                if (ltr == false) {
+                    row_container = row_container.reverse();
+                };
+                rows_container.push(row_container);
+            };
+            return rows_container;
+        },
+        get_cols: function get_cols(ud) {
+            var cols_container = [];
+            for (let col = 1; col <= COLS; col += 1) {
+                var col_container = [];
+                for (let row = 1; row <= ROWS; row += 1) {
+                    col_container.push(this.find_cell(row, col));
+                };
+                if (ud == false) {
+                    col_container = col_container.reverse();
+                };
+                cols_container.push(col_container);
+            };
+            return cols_container;
+        },
+        check_full: function check_full() {
+            var empty = 0;
+            this.cells.forEach(function(cell) {
+                if (cell.val == "") {
+                    empty += 1;
+                };
+            });
+            if (empty == 0) {
+                return true;
+            } else {
+                return false;
+            };
+        },
+        new_cell: function new_cell() {
+           if (this.check_full() == true) {
+               this.game_over();
+               return false;
+           } else {
+               var successful = false;
+               while (!(successful)) {
+                   var cell = this.random_cell();
+                   if (cell.val == "") {
+                       cell.change_value(this.random_value());
+                       successful = true;
+                   };
+               };
+           };
+        },
+        new_game: function new_game() {
+            for (let c = 0; c < 2; c += 1) {
+                this.new_cell();
+            };
+        },
+        move: function move(dir) {
+            if (dir == "Left") {
+                var new_rows = this.simplify(this.get_rows());
+                for (let row = 0; row < new_rows.length; row += 1) {
+                    for (let col = 0; col < new_rows[row].length; col += 1) {
+                        cells.find_cell(row + 1, col + 1).change_value(new_rows[row][col]);
+                    };
+                };
+            } else if (dir == "Right") {
+                var new_rows = this.simplify(this.get_rows(false));
+                for (let row = 0; row < new_rows.length; row += 1) {
+                    new_rows[row] = new_rows[row].reverse();
+                    for (let col = 0; col < new_rows[row].length; col += 1) {
+                        cells.find_cell(row + 1, col + 1).change_value(new_rows[row][col]);
+                    };
+                };
+            } else if (dir == "Up") {
+                var new_cols = this.simplify(this.get_cols());
+                for (let col = 0; col < new_cols.length; col += 1) {
+                    for (let row = 0; row < new_cols[col].length; row += 1) {
+                        cells.find_cell(row + 1, col + 1).change_value(new_cols[col][row]);
+                    };
+                };
+            } else if (dir == "Down") {
+                var new_cols = this.simplify(this.get_cols(false));
+                for (let col = 0; col < new_cols.length; col += 1) {
+                    new_cols[col] = new_cols[col].reverse();
+                    for (let row = 0; row < new_cols[col].length; row += 1) {
+                        cells.find_cell(row + 1, col + 1).change_value(new_cols[col][row]);
+                    };
+                };
+            };
+            if (["Up", "Down", "Left", "Right"].indexOf(dir) != -1) {
+                this.new_cell();
+            };
+        },
+        simplify: function simplify(rows) {
+            // Strictly speaking, "rows" can also be "columns" here
+            // Just calling it rows to be simple
+            var simplified = [];
+            function row_values(row_cells) {
+                var values = [];
+                row_cells.forEach(function(cell) {
+                    values.push(cell.val);
+                });
+                return values;
+            };
+            rows.forEach(function simplify_row(row_cells) {
+                var old_values = [];
+                var new_values = [];
+                row_values(row_cells).forEach(function(value) {
+                    if (value != "") {
+                        old_values.push(value);
+                    };
+                });
+                for (let i = 0; i < old_values.length; i += 1) {
+                    if (old_values.length > i + 1 && old_values[i] == old_values[i + 1]) {
+                        new_values.push(old_values[i] * 2);
+                        i += 1;
+                        if (old_values[i] * 2 == 2048) {
+                            cells.winning();
+                        };
+                    } else {
+                        new_values.push(old_values[i]);
+                    };
+                };
+                while (new_values.length < ROWS) {
+                    new_values.push("");
+                };
+                simplified.push(new_values);
+            });
+            return simplified;
+        },
+        game_over: function game_over() {
+            alert("Game over!");
+        },
+        winning: function winning() {
+            alert("You got to 2048! Great job!");
+        }
+    };
+    var cell = {
+        row: 0,
+        col: 0,
+        val: "",
+        create_el: function create_el(row, col) {
+            this.row = row;
+            this.col = col;
+            this.el = document.createElement("div");
+            this.el.className = "cell";
+            cells["cells"].push(this);
+        },
+        change_value: function change_value(val) {
+            this.val = val;
+            this.el.innerText = val;
+            this.el.className = "cell val-" + this.val;
+        }
+    };
+    function game() {
+        for (let row = 1; row <= ROWS; row += 1) {
+            var row_container = document.createElement("div");
+            row_container.className = "row_container";
+            for (let col = 1; col <= COLS; col += 1) {
+                var cell_instance = Object.create(cell);
+                cell_instance.create_el(row, col);
+                row_container.appendChild(cell_instance.el);
+            };
+            document.getElementById(GAME).appendChild(row_container);
+        };
+        document.addEventListener("keydown", function(evt) {
+            cells.move(evt.keyIdentifier);
+        });
+        Array.prototype.slice.call(
+                document.getElementsByTagName("button")
+            ).forEach(function(el) {
+                el.addEventListener("click", function(evt) {
+                    cells.move(this.className);
+                });
+            });
+        cells.new_game();
+    };
+    document.addEventListener("load", game());
+    })();
+</script>
+</body>
+</html>
