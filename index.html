@@ -101,7 +101,6 @@
 <header>
     <h1>2048</h1>
     <h2>This is <i>precisely</i> what I should not be doing when I'm supposed to be studying...</h2>
-    <p><i>Click on buttons, or use keyboard arrow keys to play.</i></p>
 </header>
 <section class="game_container">
     <button class="Up">&#8593;</button>
@@ -327,6 +326,54 @@
             });
         cells.new_game();
     };
+    var swipe = {
+        el: document.getElementById(GAME),
+        threshold: 50,
+        init: function init() {
+            this.el.addEventListener("touchstart", this.handle_start);
+            this.el.addEventListener("touchend", this.handle_end);
+        },
+        start_coords: {
+            x: 0,
+            y: 0
+        },
+        end_coords: {
+            x: 0,
+            y: 0
+        },
+        handle_start: function handle_start(evt) {
+            evt.preventDefault();
+            swipe.start_coords.x = evt.targetTouches[0].clientX;
+            swipe.start_coords.y = evt.targetTouches[0].clientY;
+        },
+        handle_end: function handle_end(evt) {
+            swipe.end_coords.x = evt.changedTouches[0].clientX;
+            swipe.end_coords.y = evt.changedTouches[0].clientY;
+            var ltr = swipe.end_coords.x - swipe.start_coords.x,
+                ud = swipe.end_coords.y - swipe.start_coords.y;
+            if (Math.abs(ltr) > Math.abs(ud)) {
+                if (ltr > 0) {
+                    swipe.swiped("Right", ltr);
+                } else {
+                    swipe.swiped("Left", ltr);
+                }
+            } else {
+                if (ud < 0) {
+                    swipe.swiped("Up", ud);
+                } else {
+                    swipe.swiped("Down", ud);
+                }
+            }
+        },
+        swiped: function swiped(dir, diff) {
+            if (Math.abs(diff) > this.threshold) {
+                cells.move(dir);
+            } else {
+                // Do something else if you want
+            }
+        }
+    };
+    swipe.init();
     document.addEventListener("load", game());
     })();
 </script>
