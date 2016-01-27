@@ -127,6 +127,20 @@
             0.8: 2,
             0.9: 4,
             1.0: 4
+        },
+        REPL = {
+            "": "",
+            2: "2.0",
+            4: "2.5",
+            8: "3.0",
+            16: "3.5",
+            32: "4.0",
+            64: "4.5",
+            128: "5.0",
+            256: "Mst",
+            512: "PhD",
+            1024: "A/P",
+            2048: "Prof"
         };
     var cells = {
         cells: [],
@@ -186,20 +200,40 @@
                 return false;
             };
         },
+        static_state: function static_state(cells) {
+            var status = "";
+            cells.forEach(function(row) {
+                row.forEach(function(cell) {
+                    status = status + String((cell.val || cell || "-"));
+                });
+            });
+            return status;
+        },
+        check_more_moves: function check_more_moves() {
+            if (!this.check_full()) {
+                return true;
+            };
+            var rows = [
+                        this.static_state(this.get_rows()),
+                        this.static_state(this.simplify(this.get_rows())),
+                        this.static_state(this.get_cols()),
+                        this.static_state(this.simplify(this.get_cols()))
+                       ]
+            if ( rows[0] == rows[1] && rows[2] == rows[3]) { 
+                return false;
+            } else {
+                return true;
+            };
+        },
         new_cell: function new_cell() {
-           if (this.check_full() == true) {
-               this.game_over();
-               return false;
-           } else {
-               var successful = false;
-               while (!(successful)) {
-                   var cell = this.random_cell();
-                   if (cell.val == "") {
-                       cell.change_value(this.random_value());
-                       successful = true;
-                   };
-               };
-           };
+            var successful = false;
+            while (!(successful)) {
+                var cell = this.random_cell();
+                if (cell.val == "") {
+                    cell.change_value(this.random_value());
+                    successful = true;
+                };
+            };
         },
         new_game: function new_game() {
             for (let c = 0; c < 2; c += 1) {
@@ -207,6 +241,7 @@
             };
         },
         move: function move(dir) {
+            var orig_state = this.static_state(this.get_rows());
             if (dir == "Left") {
                 var new_rows = this.simplify(this.get_rows());
                 for (let row = 0; row < new_rows.length; row += 1) {
@@ -238,8 +273,14 @@
                     };
                 };
             };
+            var new_state = this.static_state(this.get_rows());
             if (["Up", "Down", "Left", "Right"].indexOf(dir) != -1) {
-                this.new_cell();
+                if (new_state != orig_state) {
+                    this.new_cell();
+                };
+                if (!this.check_more_moves()) {
+                    this.game_over();
+                };
             };
         },
         simplify: function simplify(rows) {
@@ -263,9 +304,9 @@
                 });
                 for (let i = 0; i < old_values.length; i += 1) {
                     if (old_values.length > i + 1 && old_values[i] == old_values[i + 1]) {
-                        new_values.push(old_values[i] * 2);
+                        new_values.push(cells.merge(old_values[i]));
                         i += 1;
-                        if (old_values[i] * 2 == 2048) {
+                        if (cells.merge(old_values[i]) == 2048) {
                             cells.winning();
                         };
                     } else {
@@ -279,11 +320,14 @@
             });
             return simplified;
         },
+        merge: function merge(value) {
+            return value * 2;
+        },
         game_over: function game_over() {
             alert("Game over!");
         },
         winning: function winning() {
-            alert("You got to 2048! Great job!");
+            alert("You got to the end! Great job!");
         }
     };
     var cell = {
@@ -299,7 +343,7 @@
         },
         change_value: function change_value(val) {
             this.val = val;
-            this.el.innerText = val;
+            this.el.innerText = REPL[val];
             this.el.className = "cell val-" + this.val;
         }
     };
