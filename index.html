@@ -244,14 +244,14 @@
         },
         move: function move(dir) {
             var orig_state = this.static_state(this.get_rows());
-            if (dir == "Left") {
+            if (dir === "Left" || dir === "ArrowLeft") {
                 var new_rows = this.simplify(this.get_rows());
                 for (let row = 0; row < new_rows.length; row += 1) {
                     for (let col = 0; col < new_rows[row].length; col += 1) {
                         cells.find_cell(row + 1, col + 1).change_value(new_rows[row][col]);
                     };
                 };
-            } else if (dir == "Right") {
+            } else if (dir === "Right" || dir === "ArrowRight") {
                 var new_rows = this.simplify(this.get_rows(false));
                 for (let row = 0; row < new_rows.length; row += 1) {
                     new_rows[row] = new_rows[row].reverse();
@@ -259,14 +259,14 @@
                         cells.find_cell(row + 1, col + 1).change_value(new_rows[row][col]);
                     };
                 };
-            } else if (dir == "Up") {
+            } else if (dir === "Up" || dir === "ArrowUp") {
                 var new_cols = this.simplify(this.get_cols());
                 for (let col = 0; col < new_cols.length; col += 1) {
                     for (let row = 0; row < new_cols[col].length; row += 1) {
                         cells.find_cell(row + 1, col + 1).change_value(new_cols[col][row]);
                     };
                 };
-            } else if (dir == "Down") {
+            } else if (dir === "Down" || dir === "ArrowDown") {
                 var new_cols = this.simplify(this.get_cols(false));
                 for (let col = 0; col < new_cols.length; col += 1) {
                     new_cols[col] = new_cols[col].reverse();
@@ -276,7 +276,8 @@
                 };
             };
             var new_state = this.static_state(this.get_rows());
-            if (["Up", "Down", "Left", "Right"].indexOf(dir) != -1) {
+            if (["Up", "Down", "Left", "Right",
+                 "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(dir) != -1) {
                 if (new_state != orig_state) {
                     this.new_cell();
                 };
@@ -361,7 +362,7 @@
             document.getElementById(GAME).appendChild(row_container);
         };
         document.addEventListener("keydown", function(evt) {
-            cells.move(evt.keyIdentifier);
+            cells.move(evt.key || evt.keyIdentifier);
         });
         Array.prototype.slice.call(
                 document.getElementsByTagName("button")
