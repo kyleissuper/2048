@@ -362,6 +362,7 @@
             document.getElementById(GAME).appendChild(row_container);
         };
         document.addEventListener("keydown", function(evt) {
+            evt.preventDefault();
             cells.move(evt.key || evt.keyIdentifier);
         });
         Array.prototype.slice.call(
