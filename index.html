@@ -95,12 +95,15 @@
         color: #fff;
         background: #edc22e;
     }
+    #reset_button {
+        font-size: 20px;
+    }
     </style>
 </head>
 <body>
 <header>
     <h1>NUS 2048</h1>
-    <h2>Swipe, use directional keys, or use buttons to play. Refresh page to play again.</h2>
+    <h2>Swipe, use directional keys, or use buttons to play.</h2>
 </header>
 <section class="game_container">
     <button class="Up">&#8593;</button>
@@ -109,6 +112,9 @@
     <button class="Down">&#8595;</button>
     <div id="game"> </div>
 </section>
+<p>
+    <button id="reset_button">Reset Game</button>
+</p>
 <script type="text/javascript">
     "use strict";
     (function() {
@@ -368,6 +374,9 @@
                 evt.preventDefault();
             }
             cells.move(dir);
+        });
+        document.querySelector("#reset_button").addEventListener("click", function(evt) {
+            window.location.reload();
         });
         Array.prototype.slice.call(
                 document.getElementsByTagName("button")
